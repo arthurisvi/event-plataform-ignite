@@ -1,4 +1,4 @@
-import { Logo } from './Logo'
+import { Logo } from './icons/Logo'
 
 export function Header() {
     
