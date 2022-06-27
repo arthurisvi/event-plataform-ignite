@@ -1,14 +1,66 @@
-import { CaretRight, DiscordLogo, FileArrowDown, Lightning } from "phosphor-react";
+import {
+  CaretRight,
+  DiscordLogo,
+  FileArrowDown,
+  Lightning,
+} from "phosphor-react";
 import { Player, Youtube, DefaultUi } from "@vime/react";
-import "@vime/core/themes/default.css"
+import { gql, useQuery } from "@apollo/client";
+import "@vime/core/themes/default.css";
 
-export function Video() {
+const GET_LESSON_BY_SLUG = gql`
+  query getLessonBySlug($slug: String) {
+    lesson(where: { slug: $slug }) {
+      id
+      title
+      teacher {
+        bio
+        avatarURL
+        name
+      }
+      videoId
+      description
+    }
+  }
+`;
+
+interface GetLessonBySlugResponse{ 
+  lesson: {
+    title: string;
+    videoId: string;
+    description: string;
+    teacher: {
+      bio: string;
+      avatarURL: string;
+      name: string;
+    }
+  }
+}
+
+interface VideoProps {
+  lessonSlug: string;
+}
+
+export function Video(props: VideoProps) {
+
+  const { data } = useQuery<GetLessonBySlugResponse>(GET_LESSON_BY_SLUG, {
+    variables: {
+      slug: props.lessonSlug
+    }
+  })
+
+  if (!data) {
+    return <div className="flex-1">
+      <p>Carregando...</p>
+    </div>
+  }
+
   return (
     <div className="flex-1">
       <div className=" bg-black flex justify-center">
         <div className="h-full w-full max-w[1100px] max-h-[60vh] aspect-video">
           <Player>
-            <Youtube videoId="SO4-izct7Mc" />
+            <Youtube videoId={data.lesson.videoId} />
             <DefaultUi />
           </Player>
         </div>
@@ -17,31 +69,22 @@ export function Video() {
       <div className="p-8 max-width[1100px] mx-auto">
         <div className="flex items-start gap-16">
           <div className="flex-1">
-            <h1 className="text-2xl font-bold">
-              Aula 01 - Abertura do Ignite Lab{" "}
-            </h1>
-            <p className="mt-4 text-gray-200">
-              Lorem Ipsum is simply dummy text of the printing and typesetting
-              industry. Lorem Ipsum has been the industry's standard dummy text
-              ever since the 1500s, when an unknown printer took a galley of
-              type and scrambled it to make a type specimen book. It has
-              survived not only five centuries, but also the leap into
-              electronic typesetting, remaining essentially unchanged.
-            </p>
+            <h1 className="text-2xl font-bold">{data.lesson.title}</h1>
+            <p className="mt-4 text-gray-200">{data.lesson.description}</p>
 
             <div className="flex items-center gap-4 mt-6">
               <img
                 className="h-16 w-16 rounded-full border-2 border-blue-500"
-                src="https://github.com/arthurisvi.png"
+                src=  {data.lesson.teacher.avatarURL}
                 alt=""
               />
 
               <div className="leading-relaxed">
                 <strong className="font-bold text-2xl block">
-                  Arthur Isvi
+                  {data.lesson.teacher.name}
                 </strong>
                 <span className="text-gray-200 text-sm block">
-                  Desenvolvedor Fullstack @SoftmakersBR
+                  {data.lesson.teacher.bio}
                 </span>
               </div>
             </div>
@@ -76,7 +119,8 @@ export function Video() {
             <div className="py-6 leading-relaxed">
               <strong className="text-2xl">Material complementar</strong>
               <p className="text-sm text-gray-200 mt-2">
-                Acesse o material complementar para acelerar o seu desenvolvimento
+                Acesse o material complementar para acelerar o seu
+                desenvolvimento
               </p>
             </div>
             <div className="h-full p-6 flex items-center">
@@ -94,7 +138,8 @@ export function Video() {
             <div className="py-6 leading-relaxed">
               <strong className="text-2xl">Wallpapers exclusivos</strong>
               <p className="text-sm text-gray-200 mt-2">
-                Baixe wallpapers exclusivos do Ignite Lab e personalize a sua máquina
+                Baixe wallpapers exclusivos do Ignite Lab e personalize a sua
+                máquina
               </p>
             </div>
             <div className="h-full p-6 flex items-center">
